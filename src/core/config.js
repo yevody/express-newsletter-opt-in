@@ -1,0 +1,34 @@
+export default {
+  "id": 15,
+  "title": "Newsletter Opt In",
+  "framework": "Express",
+  "transport": "api",
+  "details": [],
+  "projects": [],
+  "actions": [],
+  "capacity": 0,
+  "adminOnly": false,
+  "hideForm": false,
+  "publicList": false,
+  "formNote": "Your details are used only to handle this request.",
+  "kind": "subscriber",
+  "eyebrow": "OCCASIONAL NOTES",
+  "headline": "A little signal in your inbox.",
+  "description": "Subscribe to occasional project notes. Confirm your email to join; you can unsubscribe using your private link.",
+  "button": "Subscribe",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Your name",
+      "type": "text"
+    },
+    {
+      "name": "email",
+      "label": "Email address",
+      "type": "email"
+    }
+  ],
+  "success": "Your subscription request is saved. Confirm your email to join.",
+  "accent": "#216451",
+  "batch": true
+};

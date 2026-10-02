@@ -1,0 +1,25 @@
+{
+  "name": "express-newsletter-opt-in",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "build": "node --check src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "test": "node --test test/*.test.mjs",
+    "retry-email": "node --env-file-if-exists=.env scripts/retry-email.mjs"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "ejs": "^3.1.10",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0"
+  },
+  "license": "MIT"
+}
