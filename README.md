@@ -1,6 +1,6 @@
-# Newsletter Opt In
+# Express Newsletter Signup with Double Opt-In (Mailtrap Email API)
 
-Subscribe, confirm the address, receive small project-note editions, and unsubscribe. This small application demonstrates **Token verification and consent state** with Express.
+A small Node.js newsletter app: visitors subscribe, confirm their address by email (double opt-in), receive project-note editions and can unsubscribe from a private link. Built with Express 5, Node.js 24's built-in SQLite and Zod, it sends confirmation emails through the [Mailtrap Email API](https://mailtrap.io/email-api/?utm_source=github&utm_medium=repo&utm_campaign=express-newsletter-opt-in) Transactional stream and newsletter editions through the Bulk stream, using plain `fetch` with no SDK.
 
 ## What it does
 
@@ -10,8 +10,8 @@ The email workflow: send a subscription confirmation link.
 
 ## Technologies
 
-- Express
-- native fetch
+- Express 5
+- [Mailtrap Email API](https://docs.mailtrap.io/email-api-smtp/overview?utm_source=github&utm_medium=repo&utm_campaign=express-newsletter-opt-in): Transactional stream for confirmations, Bulk stream for editions, called with native `fetch` (no SDK)
 - Node.js 24 and its built-in SQLite module for local persistence
 - Zod for input validation
 
@@ -101,6 +101,42 @@ This retries pending and known-failed messages. `accepted` means accepted by the
 Run one Node process behind HTTPS with a persistent writable volume for `DB_PATH`. Run the build first, then start with your configured environment. Set `APP_URL` to the real HTTPS origin; do not trust arbitrary forwarded headers. The operator uses HTTP Basic authentication and must be protected by HTTPS outside localhost. This app is not designed for ephemeral or multi-instance serverless storage.
 
 Form submissions are limited to 12 per client per hour and 3 per recipient per hour. Behind a reverse proxy, clients may share the proxy address; configure infrastructure limits before larger deployment. There is no multi-user operator system, payment processing, distributed job queue, or production email webhook tracker.
+
+## FAQ
+
+### How do I add double opt-in to an Express newsletter signup?
+
+The signup is saved as pending with a hashed, random confirmation token, and the subscriber gets an email with a private link. Opening the link shows a button; only pressing it confirms the subscription, so email link scanners can't confirm it by accident. See `src/core/service.js` and `src/core/store.js`.
+
+### How do I send email from Node.js with the Mailtrap Email API without an SDK?
+
+Send a `POST` request with a Bearer token to the Mailtrap Email API. `src/core/mail.js` does this with native `fetch`, a 15-second timeout and a check that every recipient got a message ID:
+
+```js
+const response = await fetch('https://send.api.mailtrap.io/api/send', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.MAILTRAP_PRODUCTION_TOKEN}`
+  },
+  body: JSON.stringify({
+    from: { email: process.env.MAIL_FROM, name: 'Newsletter Opt In' },
+    to: [{ email: 'subscriber@example.com' }],
+    subject: 'Confirm your subscription',
+    text: 'Open this link to confirm: https://example.com/confirm/...',
+    category: 'subscriber'
+  })
+});
+const result = await response.json(); // { success: true, message_ids: [...] }
+```
+
+### Why are confirmations and newsletter editions sent through different streams?
+
+A confirmation is a transactional email triggered by one person's action, so it goes to `send.api.mailtrap.io`. A newsletter edition goes to many people at once, so it uses the Mailtrap Bulk stream (`bulk.api.mailtrap.io/api/batch`). Keeping them apart protects the reputation of your confirmation emails, and the Bulk stream also manages its own unsubscribe and suppression handling.
+
+### What happens if an email fails to send?
+
+The subscriber record and the pending email are saved in one SQLite transaction before sending, so a failed send never loses a signup. The operator page shows each email's status, and `npm run retry-email` retries failed messages. A batch request can return HTTP 200 while some messages were rejected, so the app checks each result separately.
 
 ## License
 
