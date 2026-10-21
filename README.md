@@ -74,6 +74,7 @@ Email credential variables are documented in [email setup](docs/email-setup.md).
 - `src/core/store.js`: SQLite records, hashed tokens, rate counters, and a small email outbox.
 - `src/core/mail.js`: server-side email transport and environment selection.
 - `test/workflow.test.mjs`: workflow and permission edge cases.
+- `test/newsletter.test.mjs`: newsletter editions, batch results, and unsubscribe edge cases.
 - `test/email.test.mjs`: transport configuration tests using local doubles.
 
 ## Check and build
@@ -138,10 +139,10 @@ A confirmation is a transactional email triggered by one person's action, so it 
 
 The subscriber record and the pending email are saved in one SQLite transaction before sending, so a failed send never loses a signup. The operator page shows each email's status, and `npm run retry-email` retries failed messages. A batch request can return HTTP 200 while some messages were rejected, so the app checks each result separately.
 
+## Send project notes
+
+After a subscriber confirms, set `NEWSLETTER_POSTAL_ADDRESS` and open the operator page. Enter a unique edition key, subject and message in **Send project notes**. The edition goes only to confirmed subscribers, up to 100. An edition key can be used once; inspect email status or retry failed messages rather than creating a duplicate edition. See the [email guide](docs/email-setup.md) for stream configuration and unsubscribe behavior.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-### Send project notes
-
-After a subscriber confirms, set `NEWSLETTER_POSTAL_ADDRESS` and open the operator page. Enter a unique edition key, subject and message in **Send project notes**. The edition goes only to confirmed subscribers, up to 100. An edition key can be used once; inspect email status or retry failed messages rather than creating a duplicate edition. See the [email guide](docs/email-setup.md) for stream configuration and unsubscribe behavior.
